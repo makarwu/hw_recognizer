@@ -86,13 +86,10 @@ def preprocess_data(x, y, limit):
     y = y.reshape(len(y), 2, 1)
     return x, y
 
-# load MNIST from server, limit to 100 images per class since we're not training on GPU
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
-x_train, y_train = preprocess_data(x_train, y_train, 100)
-x_test, y_test = preprocess_data(x_test, y_test, 100)
+x_train, y_train = preprocess_data(x_train, y_train, 1000)
+x_test, y_test = preprocess_data(x_test, y_test, 1000)
 
-
-# Example to check shapes
 print(x_train.shape)  # Should be (200, 1, 28, 28)
 print(y_train.shape)  # Should be (200, 2, 1)
 
@@ -132,3 +129,4 @@ plt.show()
 for x, y in zip(x_test, y_test):
     output = predict(network, x)
     print(f"pred: {np.argmax(output)}, true: {np.argmax(y)}")
+    print(f"Accuracy {(np.argmax(output) == np.argmax(y) / len(x_test)) * 100:.2f}")
