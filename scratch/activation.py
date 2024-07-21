@@ -1,5 +1,7 @@
 from layer import Layer
 import numpy as np
+import torch
+import torch.nn.functional as F
 
 class Activation(Layer):
     def __init__(self, activation, activation_prime):
@@ -61,3 +63,15 @@ def binary_cross_entropy(y_true, y_pred):
 
 def binary_cross_entropy_prime(y_true, y_pred):
     return ((1 - y_true) / (1 - y_pred) - y_true / y_pred) / np.size(y_true)
+
+"""def mse(y_true, y_pred):
+    return torch.mean((y_true - y_pred) ** 2)
+
+def mse_prime(y_true, y_pred):
+    return 2 * (y_pred - y_true) / y_true.numel()
+
+def binary_cross_entropy(y_true, y_pred):
+    return torch.mean(-y_true * torch.log(y_pred) - (1 - y_true) * torch.log(1 - y_pred))
+
+def binary_cross_entropy_prime(y_true, y_pred):
+    return ((1 - y_true) / (1 - y_pred) - y_true / y_pred) / y_true.numel()"""
