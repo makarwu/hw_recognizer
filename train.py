@@ -43,7 +43,7 @@ def validate(model, test_loader, criterion, device):
 train_losses = []
 val_losses = []
 val_accuracies = []
-num_epochs = 5
+num_epochs = 10
 
 train_loader, test_loader = load_data()
 
@@ -81,8 +81,3 @@ plt.show()
 ### SAVING THE MODEL ###
 
 torch.save(model.state_dict(), './model/handwritten_character_recognition_model.pth')
-
-### FOR INFERENCE LATER ###
-
-"""model.load_state_dict(torch.load('handwritten_character_recognition_model.pth'))
-model.eval()"""
