@@ -7,6 +7,8 @@ from models import HCRM
 from tqdm import tqdm
 from data import load_data
 
+# Reinit the data and model everytime you want to train!
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = HCRM().to(device)
 
