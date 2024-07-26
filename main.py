@@ -18,40 +18,30 @@ model = HCRM().to(device)
 model.load_state_dict(torch.load('./model/handwritten_character_recognition_model.pth'))
 model.eval()
 
-app = Flask(__name__)
-
-"""@app.route('/predict', methods=['POST'])
-def predict():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file provided'}), 400
-    img = Image.open(io.BytesIO(file.read()))
-    img = transform(img).unsqueeze(0).to(device)
-    output = model(img)
-    _, predicted = torch.max(output, 1)
-    return jsonify({'digits': predicted.item()}) #MNIST numbers"""
+app = Flask(__name__, template_folder='templates')
 
 @app.route('/')
 def home():
-    return render_template('/Users/makarwuckert/Desktop/hw_recognizer/index.html')
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'file' not in request.files:
-        return "No file part"
-
+        return jsonify({'error': 'No file part'})
     file = request.files['file']
     if file.filename == '':
-        return "No selected file"
-    
+        return jsonify({'error': 'No selected file'})
     if file:
-        img = Image.open(io.BytesIO(file.read()))
+        img_bytes = file.read()
+        img = Image.open(io.BytesIO(img_bytes)).convert('L')
         img = transform(img).unsqueeze(0).to(device)
-        output = model(img)
-        _, predicted = torch.max(output, 1)
-        return render_template('/Users/makarwuckert/Desktop/hw_recognizer/result.html', text=predicted.item())
+        
+        with torch.no_grad():
+            output = model(img)
+            _, predicted = torch.max(output, 1)
+            prediction = predicted.item()
+        
+        return jsonify({'prediction': str(prediction)})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5002)
