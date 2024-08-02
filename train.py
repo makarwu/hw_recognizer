@@ -9,7 +9,7 @@ from data import load_data
 
 # Reinit the data and model everytime you want to train!
 
-user_input = input("What model do you want to train?\n1. CNN\n2. LSTM\n Choose between 1 and 2!\n")
+user_input = input("What model do you want to train?\n1. CNN\n2. LSTM\nChoose between 1 and 2!\n")
 
 if user_input == "1":
 
@@ -94,22 +94,21 @@ elif user_input == "2":
     model = HSRM().to(device)
 
     criterion = nn.CTCLoss(blank=0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
     def train(model, train_loader, criterion, optimizer, device):
         model.train()
         running_loss = 0.0
         for images, labels in tqdm(train_loader, desc="Training"):
-            images = images.to(device)
+            images, labels = images.to(device), [label.to(device) for label in labels]
             optimizer.zero_grad()
             outputs = model(images)
-            outputs = outputs.permute(1, 0, 2) # (T, N, C) for CTC loss
-
-            input_lengths = torch.full((images.size(0),), outputs.size(0), dtype=torch.long)
-            target_lengths = torch.IntTensor([len(label) for label in labels])
-            targets = torch.cat([torch.IntTensor(label) for label in labels])
-
-            loss = criterion(outputs, targets, input_lengths, target_lengths)
+            
+            targets = torch.cat(labels)
+            input_lengths = torch.full((outputs.size(0),), outputs.size(1), dtype=torch.long)
+            target_lengths = torch.tensor([len(label) for label in labels], dtype=torch.long)
+            
+            loss = criterion(outputs.permute(1, 0, 2), targets, input_lengths, target_lengths)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -119,27 +118,25 @@ elif user_input == "2":
         model.eval()
         running_loss = 0.0
         correct = 0
+        total = 0
         with torch.no_grad():
             for images, labels in tqdm(test_loader, desc="Validating"):
-                images = images.to(device)
+                images, labels = images.to(device), [label.to(device) for label in labels]
                 outputs = model(images)
-                outputs = outputs.permute(1, 0, 2)
-
-                input_lengths = torch.full((images.size(0),), outputs.size(0), dtype=torch.long)
-                target_lengths = torch.IntTensor([len(label) for label in labels])
-                targets = torch.cat([torch.IntTensor(label) for label in labels])
-
-                loss = criterion(outputs, targets, input_lengths, target_lengths)
+                
+                targets = torch.cat(labels)
+                input_lengths = torch.full((outputs.size(0),), outputs.size(1), dtype=torch.long)
+                target_lengths = torch.tensor([len(label) for label in labels], dtype=torch.long)
+                
+                loss = criterion(outputs.permute(1, 0, 2), targets, input_lengths, target_lengths)
                 running_loss += loss.item()
-
-                # decode the predictions
                 _, predicted = torch.max(outputs, 2)
-                predicted = predicted.transpose(0, 1)
-                for pred, target in zip(predicted, labels):
-                    pred = pred[pred != 0] # Remove the blanks
-                    correct += (pred.cpu().numpy() == target.cpu().numpy()).sum()
+                #correct += (predicted == labels).sum().item()
+                for i in range(len(labels)):
+                    correct += (predicted[i][:len(labels[i])] == labels[i]).sum().item()
+                    total += len(labels[i])
         
-        return running_loss / len(test_loader), correct / len(test_loader.dataset)
+        return running_loss / len(test_loader), correct / total
 
     train_losses = []
     val_losses = []
