@@ -9,7 +9,7 @@ from data import load_data
 
 # Reinit the data and model everytime you want to train!
 
-user_input = input("What model do you want to train?\n1. CNN\n2. LSTM\nChoose between 1 and 2!\n")
+user_input = input("What model do you want to train?\n1. Single Digit Model\n2. Sequence Digit Model\nChoose between 1 and 2!\n")
 
 if user_input == "1":
 
@@ -88,27 +88,22 @@ if user_input == "1":
 
     torch.save(model.state_dict(), './model/handwritten_character_recognition_model.pth')
 
-elif user_input == "2":
-
+if user_input == "2":
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = HSRM().to(device)
 
-    criterion = nn.CTCLoss(blank=0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     def train(model, train_loader, criterion, optimizer, device):
         model.train()
         running_loss = 0.0
         for images, labels in tqdm(train_loader, desc="Training"):
-            images, labels = images.to(device), [label.to(device) for label in labels]
+            images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(images)
-            
-            targets = torch.cat(labels)
-            input_lengths = torch.full((outputs.size(0),), outputs.size(1), dtype=torch.long)
-            target_lengths = torch.tensor([len(label) for label in labels], dtype=torch.long)
-            
-            loss = criterion(outputs.permute(1, 0, 2), targets, input_lengths, target_lengths)
+            loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -121,22 +116,17 @@ elif user_input == "2":
         total = 0
         with torch.no_grad():
             for images, labels in tqdm(test_loader, desc="Validating"):
-                images, labels = images.to(device), [label.to(device) for label in labels]
+                images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
-                
-                targets = torch.cat(labels)
-                input_lengths = torch.full((outputs.size(0),), outputs.size(1), dtype=torch.long)
-                target_lengths = torch.tensor([len(label) for label in labels], dtype=torch.long)
-                
-                loss = criterion(outputs.permute(1, 0, 2), targets, input_lengths, target_lengths)
+                loss = criterion(outputs, labels)
                 running_loss += loss.item()
-                _, predicted = torch.max(outputs, 2)
-                #correct += (predicted == labels).sum().item()
-                for i in range(len(labels)):
-                    correct += (predicted[i][:len(labels[i])] == labels[i]).sum().item()
-                    total += len(labels[i])
-        
-        return running_loss / len(test_loader), correct / total
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        avg_loss = running_loss / len(test_loader)
+        accuracy = correct / total
+
+        return avg_loss, accuracy
 
     train_losses = []
     val_losses = []
@@ -154,7 +144,7 @@ elif user_input == "2":
         val_accuracies.append(val_accuracy)
 
         print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}')
-   
+
     ## PLOTTING LOSSES AND ACCURACIES ###
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
@@ -175,8 +165,5 @@ elif user_input == "2":
     plt.show()
 
     ### SAVING THE MODEL ###
-
     torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
-
-else:
-    print("Wrong Input")
+    
