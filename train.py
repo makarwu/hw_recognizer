@@ -94,9 +94,9 @@ if user_input == "2":
     model = HSRM().to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-    def train(model, train_loader, criterion, optimizer, device):
+    """def train(model, train_loader, criterion, optimizer, device):
         model.train()
         running_loss = 0.0
         for images, labels in tqdm(train_loader, desc="Training"):
@@ -126,24 +126,71 @@ if user_input == "2":
         avg_loss = running_loss / len(test_loader)
         accuracy = correct / total
 
-        return avg_loss, accuracy
+        return avg_loss, accuracy"""
+    def train(model, train_loader, criterion, optimizer, device):
+        model.train()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        for images, labels in tqdm(train_loader, desc="Training"):
+            images, labels = images.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(images)
+            
+            loss = criterion(outputs.view(-1, 10), labels.view(-1))
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+            _, predicted = torch.max(outputs.data, 2)
+            total += labels.size(0) * labels.size(1)
+            correct += (predicted == labels).sum().item()
+
+        train_loss = running_loss / len(train_loader)
+        train_accuracy = correct / total
+        return train_loss, train_accuracy
+
+    def validate(model, val_loader, criterion, device):
+        model.eval()
+        running_loss = 0.0
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for images, labels in tqdm(val_loader, desc="Validating"):
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
+                
+                loss = criterion(outputs.view(-1, 10), labels.view(-1))
+                running_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 2)
+                total += labels.size(0) * labels.size(1)
+                correct += (predicted == labels).sum().item()
+
+        val_loss = running_loss / len(val_loader)
+        val_accuracy = correct / total
+        return val_loss, val_accuracy
 
     train_losses = []
     val_losses = []
+    train_accuracies = []
     val_accuracies = []
-    num_epochs = 10
+    num_epochs = 20
 
-    train_loader, test_loader = load_data()
+    train_loader, test_loader = load_data(create_sequence_data=True)
 
     for epoch in tqdm(range(num_epochs)):
-        train_loss = train(model, train_loader, criterion, optimizer, device)
+        train_loss, train_accuracy = train(model, train_loader, criterion, optimizer, device)
         val_loss, val_accuracy = validate(model, test_loader, criterion, device)
 
         train_losses.append(train_loss)
+        train_accuracies.append(train_accuracy)
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
 
-        print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}')
+        print(f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}")
+        print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
 
     ## PLOTTING LOSSES AND ACCURACIES ###
     plt.figure(figsize=(12, 5))
@@ -156,6 +203,7 @@ if user_input == "2":
     plt.legend()
 
     plt.subplot(1, 2, 2)
+    plt.plot(train_accuracies, label="Train Accuracy")
     plt.plot(val_accuracies, label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -165,5 +213,5 @@ if user_input == "2":
     plt.show()
 
     ### SAVING THE MODEL ###
-    torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
+    torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm_2.pth')
     
