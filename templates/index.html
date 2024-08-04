@@ -1,47 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <title>Handwritten Character Recognition</title>
+    <title>Digit Recognizer</title>
   </head>
   <body>
-    <h1>Upload Handwritten Character Image</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" name="file" required />
+    <h1>Upload a Handwritten Digit</h1>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept="image/*" required />
       <br />
-      <input type="radio" name="model" value="single" checked /> Single Digit
-      <input type="radio" name="model" value="sequence" /> Sequence Digit
+      <label for="model_choice">Choose a model:</label>
+      <select name="model_choice">
+        <option value="single">Single Digit Model</option>
+        <option value="sequence">Sequence Digit Model</option>
+      </select>
       <br />
-      <input type="submit" value="Upload and Predict" />
+      <input type="submit" value="Predict" />
     </form>
-    <div id="result"></div>
-
-    <script>
-      const form = document.getElementById("uploadForm");
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        try {
-          const response = await fetch("/predict", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-          }
-
-          const result = await response.json();
-          document.getElementById(
-            "result"
-          ).textContent = `Prediction: ${result.prediction}`;
-        } catch (error) {
-          console.error("Error during fetch:", error);
-          document.getElementById(
-            "result"
-          ).textContent = `Error: ${error.message}`;
-        }
-      };
-    </script>
   </body>
 </html>

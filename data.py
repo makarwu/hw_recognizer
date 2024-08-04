@@ -9,33 +9,27 @@ import os
 
 ### EMNIST Somehow now working?
 
-sequence_length = 5
-
-class SequenceDigitDataset(Dataset):
-    def __init__(self, dataset, sequence_length=5, transform=None):
-        self.dataset = dataset
-        self.sequence_length = sequence_length
+class SequenceMNIST(Dataset):
+    def __init__(self, mnist_dataset, seq_len=5, transform=None):
+        self.mnist_dataset = mnist_dataset
+        self.seq_len = seq_len
         self.transform = transform
 
     def __len__(self):
-        return len(self.dataset) // self.sequence_length
+        return len(self.mnist_dataset) // self.seq_len
 
     def __getitem__(self, idx):
-        sequence_images = []
-        sequence_labels = []
-        
-        for i in range(self.sequence_length):
-            img, label = self.dataset[idx * self.sequence_length + i]
-            sequence_images.append(img)
-            sequence_labels.append(label)
-        
-        # Concatenate images horizontally
-        sequence_image = torch.cat(sequence_images, dim=2)  # Concatenate along width
-        
-        sequence_labels = torch.tensor(sequence_labels)
-        
-        return sequence_image, sequence_labels
-
+        images = []
+        labels = []
+        for i in range(self.seq_len):
+            img, label = self.mnist_dataset[idx * self.seq_len + i]
+            if self.transform:
+                img = self.transform(img)
+            images.append(img)
+            labels.append(label)
+        images = torch.stack(images)
+        labels = torch.tensor(labels)
+        return images, labels
 
 transform = transforms.Compose([
     transforms.ToTensor(),
@@ -48,24 +42,43 @@ if not os.path.exists('./data/EMNIST'):
 if not os.path.exists('./data/MNIST'):
     os.makedirs('./data/MNIST')
 
+if not os.path.exists('./data/sequence/MNIST'):
+    os.makedirs('./data/sequence/MNIST')
+
 def load_data(create_sequence_data=False):
 
     train_mnist = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
     test_mnist = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
-    if create_sequence_data == True:
-        train_dataset = SequenceDigitDataset(train_mnist, sequence_length=sequence_length, transform=transform)
-        test_dataset = SequenceDigitDataset(test_mnist, sequence_length=sequence_length, transform=transform)
-        train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-    else:
-        train_loader = DataLoader(train_mnist, batch_size=32, shuffle=True)
-        test_loader = DataLoader(test_mnist, batch_size=32, shuffle=False)
+    train_loader = DataLoader(train_mnist, batch_size=32, shuffle=True)
+    test_loader = DataLoader(test_mnist, batch_size=32, shuffle=False)
+
+    return train_loader, test_loader
+
+def load_data_sequence():
+    
+    train_set = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+    test_set = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+
+    
+    train_seq_set = SequenceMNIST(train_set, seq_len=5, transform=transform)
+    test_seq_set = SequenceMNIST(test_set, seq_len=5, transform=transform)
+
+    train_loader = DataLoader(train_seq_set, batch_size=32, shuffle=True)
+    test_loader = DataLoader(test_seq_set, batch_size=32, shuffle=False)
 
     return train_loader, test_loader
 
 if __name__ == '__main__':
-    train_loader, test_loader = load_data()
-    for images, labels in train_loader:
-        print(images.shape, labels.shape)
-        break
+    user_input = input("Do you want to download the normal MNIST data (1) or sequenced MNIST data (2)?")
+    if user_input == "1":
+        train_loader, test_loader = load_data()
+        for images, labels in train_loader:
+            print(images.shape, labels.shape)
+            break
+        
+    if user_input == "2":
+        train_loader, test_loader = load_data_sequence()
+        for images, labels in train_loader:
+            print(images.shape, labels.shape)
+            break
