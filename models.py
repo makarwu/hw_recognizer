@@ -21,21 +21,6 @@ class HCRM(nn.Module):
         x = self.fc2(x)
         return x
 
-"""class HSRM(nn.Module):
-    def __init__(self, sequence_length=5, num_classes=10, input_size=28, hidden_size=128, num_layers=2):
-        super(HSRM, self).__init__()
-        self.sequence_length = sequence_length
-        self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, num_classes * sequence_length)
-
-    def forward(self, x):
-        # Reshape input to (batch_size, sequence_length, input_size)
-        x = x.squeeze(1)  # Remove channel dimension (batch_size, height, width)
-        x = x.permute(0, 2, 1)  # (batch_size, width, height)
-        x, _ = self.lstm(x)
-        x = self.fc(x[:, -1, :])
-        return x.view(-1, self.sequence_length, 10)"""
-
 class HSRM(nn.Module):
     def __init__(self, num_classes=10, num_layers=1, hidden_size=128):
         super(HSRM, self).__init__()
@@ -51,10 +36,11 @@ class HSRM(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
+        #print("\nx size:", x.size()) #DEBUG
         batch_size, seq_len, channels, height, width = x.size()
-        c_in = x.view(batch_size * seq_len, channels, height, width)
-        c_out = self.cnn(c_in)
-        r_in = c_out.view(batch_size, seq_len, -1)
-        r_out, (h_n, c_n) = self.lstm(r_in)
+        x = x.view(batch_size * seq_len, channels, height, width)
+        c_out = self.cnn(x)
+        c_out = c_out.view(batch_size, seq_len, -1)
+        r_out, (h_n, c_n) = self.lstm(c_out)
         r_out2 = self.fc(r_out)
         return r_out2

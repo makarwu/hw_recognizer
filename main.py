@@ -20,7 +20,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_single = HCRM().to(device)
 model_single.load_state_dict(torch.load('./model/handwritten_character_recognition_model.pth'))
 model_sequence = HSRM().to(device)
-model_sequence.load_state_dict(torch.load('./model/handwritten_character_recognition_model_lstm_3.pth'))
+model_sequence.load_state_dict(torch.load('./model/handwritten_character_recognition_model_lstm.pth'))
 
 model_single.eval()
 model_sequence.eval()
@@ -54,15 +54,17 @@ def predict():
 
     model_choice = request.form.get('model_choice')
     if model_choice == 'single':
-        img = transform(img).unsqueeze(0)
+        img = transform(img).unsqueeze(0).to(device)
         outputs = model_single(img)
+        _, predicted = torch.max(outputs.data, 1)
+        result = predicted.squeeze().tolist()
+        print("result:", result)
     else:
-        img = preprocess_sequence_image(img)
-        print("Image size:", img.size)
+        img = preprocess_sequence_image(img).to(device)
         outputs = model_sequence(img)
-
-    _, predicted = torch.max(outputs.data, 2)
-    result = predicted.squeeze().tolist()
+        _, predicted = torch.max(outputs.data, 2)
+        result = predicted.squeeze().tolist()
+        print("result:", result)
 
     return jsonify({'prediction': result})
 

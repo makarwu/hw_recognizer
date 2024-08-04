@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from models import HCRM, HSRM
 from tqdm import tqdm
-from data import load_data
+from data import load_data, load_data_sequence
 
 # Reinit the data and model everytime you want to train!
 
@@ -103,6 +103,8 @@ if user_input == "2":
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(images)
+            outputs = outputs.view(-1, outputs.size(-1)) # Flatten the output to (batch_size * seq_len, num_classes)
+            labels = labels.view(-1) # Flatten the labels to (batch_size * seq_len)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -120,6 +122,8 @@ if user_input == "2":
             for images, labels in tqdm(test_loader, desc="Validating"):
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
+                outputs = outputs.view(-1, outputs.size(-1))
+                labels = labels.view(-1)
                 loss = criterion(outputs, labels)
                 running_loss += loss.item()
                 _, predicted = torch.max(outputs.data, 1)
@@ -136,7 +140,7 @@ if user_input == "2":
     val_accuracies = []
     num_epochs = 10
 
-    train_loader, test_loader = load_data()
+    train_loader, test_loader = load_data_sequence()
 
     for epoch in tqdm(range(num_epochs)):
         #train_loss, train_accuracy = train(model, train_loader, criterion, optimizer, device)

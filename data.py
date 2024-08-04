@@ -27,11 +27,13 @@ class SequenceMNIST(Dataset):
                 img = self.transform(img)
             images.append(img)
             labels.append(label)
-        images = torch.stack(images)
-        labels = torch.tensor(labels)
+        images = torch.stack(images)  # shape (seq_len, 1, 28, 28)
+        labels = torch.tensor(labels)  # shape (seq_len)
         return images, labels
 
 transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.Grayscale(),
     transforms.ToTensor(),
     transforms.Normalize((0.5,), (0.5,))
 ])
@@ -57,10 +59,9 @@ def load_data(create_sequence_data=False):
 
 def load_data_sequence():
     
-    train_set = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-    test_set = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+    train_set = datasets.MNIST(root='./data/sequence', train=True, download=True, transform=None)
+    test_set = datasets.MNIST(root='./data/sequence', train=False, download=True, transform=None)
 
-    
     train_seq_set = SequenceMNIST(train_set, seq_len=5, transform=transform)
     test_seq_set = SequenceMNIST(test_set, seq_len=5, transform=transform)
 
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         for images, labels in train_loader:
             print(images.shape, labels.shape)
             break
-        
+
     if user_input == "2":
         train_loader, test_loader = load_data_sequence()
         for images, labels in train_loader:
