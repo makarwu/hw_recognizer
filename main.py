@@ -5,6 +5,7 @@ from models import HCRM, HSRM
 from torchvision import transforms
 import io
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 ### FOR INFERENCE LATER ###
 
@@ -39,6 +40,7 @@ def preprocess_sequence_image(image, num_digits=5):
     for i in range(num_digits):
         digit = image.crop((i * digit_width, 0, (i + 1) * digit_width, height))
         digit = transform(digit)
+        #plt.imshow(digit) # DEBUGGING
         images.append(digit)
     return torch.stack(images).unsqueeze(0) # shape(1, num_digits, 1, 28, 28)
 
@@ -56,13 +58,16 @@ def predict():
     if model_choice == 'single':
         img = transform(img).unsqueeze(0).to(device)
         outputs = model_single(img)
+        print("outputs:", outputs)
         _, predicted = torch.max(outputs.data, 1)
         result = predicted.squeeze().tolist()
         print("result:", result)
     else:
         img = preprocess_sequence_image(img).to(device)
         outputs = model_sequence(img)
+        print("outputs:", outputs)
         _, predicted = torch.max(outputs.data, 2)
+        print("predicted:", predicted)
         result = predicted.squeeze().tolist()
         print("result:", result)
 
