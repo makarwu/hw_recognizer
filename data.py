@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 import torch
 import numpy as np
-import random
+import matplotlib.pyplot as plt
 import os
 
 ### EMNIST Somehow now working?
@@ -47,6 +47,14 @@ if not os.path.exists('./data/MNIST'):
 if not os.path.exists('./data/sequence/MNIST'):
     os.makedirs('./data/sequence/MNIST')
 
+def show_sequence(images, labels):
+    fig, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 2))
+    for i, (img, label) in enumerate(zip(images, labels)):
+        axes[i].imshow(img.squeeze(), cmap='gray')
+        axes[i].set_title(f"Label: {label.item()}")
+        axes[i].axis('off')
+    plt.show()
+
 def load_data(create_sequence_data=False):
 
     train_mnist = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
@@ -72,6 +80,7 @@ def load_data_sequence():
 
 if __name__ == '__main__':
     user_input = input("Do you want to download the normal MNIST data (1) or sequenced MNIST data (2)?")
+    
     if user_input == "1":
         train_loader, test_loader = load_data()
         for images, labels in train_loader:
@@ -82,4 +91,5 @@ if __name__ == '__main__':
         train_loader, test_loader = load_data_sequence()
         for images, labels in train_loader:
             print(images.shape, labels.shape)
+            show_sequence(images[0], labels[0])
             break
