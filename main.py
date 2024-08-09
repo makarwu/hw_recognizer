@@ -3,8 +3,11 @@ from flask import Flask, request, jsonify, render_template
 from PIL import Image
 from models import HCRM, HSRM
 from torchvision import transforms
+import base64
 import io
 import torch.nn.functional as F
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 ### FOR INFERENCE LATER ###
@@ -40,10 +43,27 @@ def preprocess_sequence_image(image, num_digits=5):
     for i in range(num_digits):
         digit = image.crop((i * digit_width, 0, (i + 1) * digit_width, height))
         digit = transform(digit)
-        #plt.imshow(digit) # DEBUGGING
-        images.append(digit)
+        images.append(digit)    
+    viz_preprocessed_image(images)
+
     return torch.stack(images).unsqueeze(0) # shape(1, num_digits, 1, 28, 28)
 
+def viz_preprocessed_image(images):
+    fig, axes = plt.subplots(1, len(images), figsize=(10, 2))
+    for i, digit in enumerate(images):
+        digit = digit.squeeze(0)
+        digit = digit * 0.5 + 0.5
+        axes[i].imshow(digit.numpy(), cmap="gray")
+        axes[i].axis('off')
+    
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    img_str = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+
+    return img_str
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -70,8 +90,10 @@ def predict():
         print("predicted:", predicted)
         result = predicted.squeeze().tolist()
         print("result:", result)
+    
+    img_str = viz_preprocessed_image(img.squeeze(0).cpu())
 
-    return jsonify({'prediction': result})
+    return jsonify({'prediction': result, 'image': img_str})
 
 if __name__ == '__main__':
     app.run(debug=True)

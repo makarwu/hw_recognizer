@@ -2,10 +2,40 @@
 <html>
   <head>
     <title>Digit Recognizer</title>
+    <script>
+      function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+
+        fetch("/predict", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById(
+              "result"
+            ).innerText = `Prediction: ${data.prediction}`;
+
+            if (data.image) {
+              document.getElementById(
+                "preprocessedImage"
+              ).src = `data:image/png;base64,${data.image}`;
+              document.getElementById("imageContainer").style.display = "block";
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    </script>
   </head>
   <body>
     <h1>Upload a Handwritten Digit</h1>
-    <form action="/predict" method="post" enctype="multipart/form-data">
+    <form
+      id="uploadForm"
+      onsubmit="handleSubmit(event)"
+      enctype="multipart/form-data"
+    >
       <input type="file" name="file" accept="image/*" required />
       <br />
       <label for="model_choice">Choose a model:</label>
@@ -16,5 +46,13 @@
       <br />
       <input type="submit" value="Predict" />
     </form>
+
+    <h2 id="result"></h2>
+
+    <!-- Container to display the preprocessed image -->
+    <div id="imageContainer" style="display: none">
+      <h2>Preprocessed Image</h2>
+      <img id="preprocessedImage" alt="Preprocessed Image" />
+    </div>
   </body>
 </html>
