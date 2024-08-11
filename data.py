@@ -7,8 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-### EMNIST Somehow now working?
-
 class SequenceMNIST(Dataset):
     def __init__(self, mnist_dataset, seq_len=5, transform=None):
         self.mnist_dataset = mnist_dataset
