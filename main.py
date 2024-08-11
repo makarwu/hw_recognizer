@@ -82,7 +82,7 @@ def predict():
         _, predicted = torch.max(outputs.data, 1)
         result = predicted.squeeze().tolist()
         print("result:", result)
-    else:
+    elif model_choice == 'sequence':
         img = preprocess_sequence_image(img).to(device)
         outputs = model_sequence(img)
         print("outputs:", outputs)

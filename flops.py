@@ -1,6 +1,6 @@
 import torch
 from thop import profile
-from models import HCRM
+from models import HCRM, HSRM
 from importlib_metadata import version
 
 ### FLOPS ANALYSIS ###

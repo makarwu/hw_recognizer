@@ -103,8 +103,10 @@ if user_input == "2":
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(images)
-            outputs = outputs.view(-1, outputs.size(-1)) # Flatten the output to (batch_size * seq_len, num_classes)
-            labels = labels.view(-1) # Flatten the labels to (batch_size * seq_len)
+            # FYI: Flatten the output to (batch_size * seq_len, num_classes)
+            outputs = outputs.view(-1, outputs.size(-1)) 
+            # FYI: Flatten the labels to (batch_size * seq_len)
+            labels = labels.view(-1) 
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -143,16 +145,14 @@ if user_input == "2":
     train_loader, test_loader = load_data_sequence()
 
     for epoch in tqdm(range(num_epochs)):
-        #train_loss, train_accuracy = train(model, train_loader, criterion, optimizer, device)
         train_loss = train(model, train_loader, criterion, optimizer, device)
         val_loss, val_accuracy = validate(model, test_loader, criterion, device)
 
         train_losses.append(train_loss)
-        #train_accuracies.append(train_accuracy)
         val_losses.append(val_loss)
         val_accuracies.append(val_accuracy)
 
-        print(f"Train Loss: {train_loss:.4f}")#, Train Accuracy: {train_accuracy:.4f}")
+        print(f"Train Loss: {train_loss:.4f}")
         print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
 
     ## PLOTTING LOSSES AND ACCURACIES ###

@@ -26,7 +26,7 @@ class SequenceMNIST(Dataset):
             images.append(img)
             labels.append(label)
         images = torch.stack(images)  # shape (seq_len, 1, 28, 28)
-        labels = torch.tensor(labels)  # shape (seq_len)
+        labels = torch.tensor(labels) 
         return images, labels
 
 transform = transforms.Compose([
