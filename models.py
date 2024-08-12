@@ -36,11 +36,15 @@ class HSRM(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        #print("\nx size:", x.size()) #DEBUG
         batch_size, seq_len, channels, height, width = x.size()
+        print(f"Input shape: {x.shape}")
         x = x.view(batch_size * seq_len, channels, height, width)
         c_out = self.cnn(x)
+        print(f"Shape after CNN: {c_out.shape}")
         c_out = c_out.view(batch_size, seq_len, -1)
+        print(f"Shape before LSTM: {c_out.shape}")
         r_out, (h_n, c_n) = self.lstm(c_out)
+        print(f"Shape after LSTM: {r_out.shape}")
         r_out2 = self.fc(r_out)
+        print(f"Final output shape: {r_out2.shape}")
         return r_out2

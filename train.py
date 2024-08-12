@@ -176,5 +176,5 @@ if user_input == "2":
     plt.show()
 
     ### SAVING THE MODEL ###
-    torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
+    #torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
     
