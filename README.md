@@ -15,4 +15,5 @@
   ![Train/val](./test_data/newest_lstm.jpg)
 
 - Additionally, I wrote a script to calculate the flops, with respect to the model.
-  - The LSTM reached **2.1e+10** FLOPS
+  - The single character model reached **2.1e+10** FLOPS
+  - The LSTM has 

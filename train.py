@@ -94,7 +94,7 @@ if user_input == "2":
     model = HSRM().to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     def train(model, train_loader, criterion, optimizer, device):
         model.train()
@@ -128,7 +128,7 @@ if user_input == "2":
                 labels = labels.view(-1)
                 loss = criterion(outputs, labels)
                 running_loss += loss.item()
-                _, predicted = torch.max(outputs.data, 1)
+                _, predicted = torch.max(outputs.data, 1) 
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         avg_loss = running_loss / len(test_loader)
@@ -138,7 +138,6 @@ if user_input == "2":
 
     train_losses = []
     val_losses = []
-    train_accuracies = []
     val_accuracies = []
     num_epochs = 10
 
@@ -166,7 +165,6 @@ if user_input == "2":
     plt.legend()
 
     plt.subplot(1, 2, 2)
-    plt.plot(train_accuracies, label="Train Accuracy")
     plt.plot(val_accuracies, label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
@@ -176,5 +174,5 @@ if user_input == "2":
     plt.show()
 
     ### SAVING THE MODEL ###
-    #torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
+    torch.save(model.state_dict(), './model/handwritten_character_recognition_model_lstm.pth')
     

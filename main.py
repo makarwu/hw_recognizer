@@ -52,7 +52,6 @@ def viz_preprocessed_image(images):
     fig, axes = plt.subplots(1, len(images), figsize=(10, 2))
     for i, digit in enumerate(images):
         digit = digit.squeeze(0)
-        digit = digit * 0.5 + 0.5
         axes[i].imshow(digit.numpy(), cmap="gray")
         axes[i].axis('off')
     
@@ -88,8 +87,9 @@ def predict():
         print("outputs:", outputs)
         _, predicted = torch.max(outputs.data, 2)
         print("predicted:", predicted)
-        result = predicted.squeeze().tolist()
+        result = predicted.squeeze(0).tolist()
         print("result:", result)
+        print("Raw logits: ", outputs.data)
     
     img_str = viz_preprocessed_image(img.squeeze(0).cpu())
 
