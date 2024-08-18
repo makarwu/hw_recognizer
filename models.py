@@ -21,34 +21,6 @@ class HCRM(nn.Module):
         x = self.fc2(x)
         return x
 
-### OLD MODEL ###
-"""class HSRM(nn.Module):
-    def __init__(self, num_classes=10, num_layers=1, hidden_size=128):
-        super(HSRM, self).__init__()
-        self.cnn = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2)
-        )
-        self.lstm = nn.LSTM(64 * 7 * 7, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, num_classes)
-
-    def forward(self, x):
-        batch_size, seq_len, channels, height, width = x.size()
-        print(f"Input shape: {x.shape}")
-        x = x.view(batch_size * seq_len, channels, height, width)
-        c_out = self.cnn(x)
-        print(f"Shape after CNN: {c_out.shape}")
-        c_out = c_out.view(batch_size, seq_len, -1)
-        print(f"Shape before LSTM: {c_out.shape}")
-        r_out, (h_n, c_n) = self.lstm(c_out)
-        print(f"Shape after LSTM: {r_out.shape}")
-        r_out2 = self.fc(r_out)
-        print(f"Final output shape: {r_out2.shape}")
-        return r_out2"""
 class HSRM(nn.Module):
     def __init__(self, num_classes=10, num_layers=2, hidden_size=256):
         super(HSRM, self).__init__()

@@ -94,7 +94,7 @@ if user_input == "2":
     model = HSRM().to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
 
     def train(model, train_loader, criterion, optimizer, device):
         model.train()
@@ -139,7 +139,7 @@ if user_input == "2":
     train_losses = []
     val_losses = []
     val_accuracies = []
-    num_epochs = 10
+    num_epochs = 8
 
     train_loader, test_loader = load_data_sequence()
 

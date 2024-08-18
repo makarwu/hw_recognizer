@@ -39,13 +39,21 @@ def preprocess_sequence_image(image, num_digits=5):
     width, height = image.size
     print("Width:", width, "Height:", height)
     digit_width = width // num_digits
+    remainder = width % num_digits
+
     images = []
     for i in range(num_digits):
-        digit = image.crop((i * digit_width, 0, (i + 1) * digit_width, height))
+        left = i * digit_width + min(i, remainder)
+        ## DEBUGGING ##
+        print("left:", left)
+        right = (i + 1) * digit_width + min(i + 1, remainder)
+        ## DEBUGGING ## 
+        print("right:", right)
+        digit = image.crop((left, 0, right, height))
         digit = transform(digit)
-        images.append(digit)    
-    viz_preprocessed_image(images)
+        images.append(digit)
 
+    viz_preprocessed_image(images)
     return torch.stack(images).unsqueeze(0) # shape(1, num_digits, 1, 28, 28)
 
 def viz_preprocessed_image(images):
@@ -71,7 +79,7 @@ def predict():
 
     file = request.files['file']
     img_bytes = file.read()
-    img = Image.open(io.BytesIO(img_bytes)).convert('L')
+    img = Image.open(io.BytesIO(img_bytes)).convert('L') # changed this
 
     model_choice = request.form.get('model_choice')
     if model_choice == 'single':
