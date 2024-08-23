@@ -16,4 +16,3 @@
 
 - Additionally, I wrote a script to calculate the flops, with respect to the model.
   - The single character model reached **2.1e+10** FLOPS
-  - The LSTM has 
