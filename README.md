@@ -12,7 +12,7 @@
   ![First training sample](./test_data/sequence_data.jpg)
 
 - Performance of the sequence digit model:
-  ![Train/val](./test_data/newest_lstm.jpg)
+  ![Train/val](./test_data/ultra_newest.jpg)
 
 - Additionally, I wrote a script to calculate the flops, with respect to the model.
   - The single character model reached **2.1e+10** FLOPS

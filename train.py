@@ -102,12 +102,11 @@ if user_input == "2":
         for images, labels in tqdm(train_loader, desc="Training"):
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
-            outputs = model(images)
-            # FYI: Flatten the output to (batch_size * seq_len, num_classes)
-            outputs = outputs.view(-1, outputs.size(-1)) 
-            # FYI: Flatten the labels to (batch_size * seq_len)
-            labels = labels.view(-1) 
-            loss = criterion(outputs, labels)
+
+            outputs = model(images) # shape: batch_size, sequence_length, num_classes
+            #outputs = outputs.view(-1, outputs.size(-1)) 
+            #labels = labels.view(-1) 
+            loss = criterion(outputs.permute(0, 2, 1), labels)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
@@ -124,12 +123,14 @@ if user_input == "2":
             for images, labels in tqdm(test_loader, desc="Validating"):
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
-                outputs = outputs.view(-1, outputs.size(-1))
-                labels = labels.view(-1)
-                loss = criterion(outputs, labels)
+                #outputs = outputs.view(-1, outputs.size(-1))
+                #print("val outputs: ", outputs)
+                #labels = labels.view(-1)
+                loss = criterion(outputs.permute(0, 2, 1), labels)
                 running_loss += loss.item()
-                _, predicted = torch.max(outputs.data, 1) 
-                total += labels.size(0)
+                _, predicted = torch.max(outputs.data, 2) 
+                print("val predictions: ", predicted)
+                total += labels.size(0) * labels.size(1) # batch_size * seq_len
                 correct += (predicted == labels).sum().item()
         avg_loss = running_loss / len(test_loader)
         accuracy = correct / total
