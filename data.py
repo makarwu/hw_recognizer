@@ -35,10 +35,10 @@ transform = transforms.Compose([
     transforms.RandomRotation(10),
     transforms.RandomAffine(degrees=10, translate=(0.1, 0.1)),
     
-    transforms.Resize((28, 28)),
-    transforms.Grayscale(),
+    #transforms.Resize((28, 28)),
+    #transforms.Grayscale(),
     transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
 if not os.path.exists('./data/EMNIST'):
@@ -86,6 +86,10 @@ def load_data_sequence():
     train_set = datasets.MNIST(root='./data/sequence', train=True, download=True, transform=None)
     test_set = datasets.MNIST(root='./data/sequence', train=False, download=True, transform=None)
 
+    print('Min Pixel Value: {} \nMax Pixel Value: {}'.format(train_set.data.min(), train_set.data.max()))
+    print('Mean Pixel Value {} \nPixel Values Std: {}'.format(train_set.data.float().mean(), train_set.data.float().std()))
+    print('Scaled Mean Pixel Value {} \nScaled Pixel Values Std: {}'.format(train_set.data.float().mean() / 255, train_set.data.float().std() / 255))
+    
     train_seq_set = SequenceMNIST(train_set, seq_len=5, transform=transform)
     test_seq_set = SequenceMNIST(test_set, seq_len=5, transform=transform)
 

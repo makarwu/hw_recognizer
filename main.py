@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 ### FOR INFERENCE LATER ###
 
 transform = transforms.Compose([
-    transforms.Resize((28, 28)),
-    transforms.Grayscale(),
+    #transforms.Resize((28, 28)),
+    #transforms.Grayscale(),
     transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -39,14 +39,13 @@ def preprocess_sequence_image(image, num_digits=5):
     width, height = image.size
     print("Width:", width, "Height:", height)
     digit_width = width // num_digits
-    remainder = width % num_digits
-
     images = []
+
     for i in range(num_digits):
-        left = i * digit_width + min(i, remainder)
+        left = i * digit_width
         ## DEBUGGING ##
         print("left:", left)
-        right = (i + 1) * digit_width + min(i + 1, remainder)
+        right = (i + 1) * digit_width if i < num_digits - 1 else width
         ## DEBUGGING ## 
         print("right:", right)
         digit = image.crop((left, 0, right, height))
@@ -97,7 +96,6 @@ def predict():
         print("predicted:", predicted)
         result = predicted.squeeze(0).tolist()
         print("result:", result)
-        print("Raw logits: ", outputs.data)
     
     img_str = viz_preprocessed_image(img.squeeze(0).cpu())
 
